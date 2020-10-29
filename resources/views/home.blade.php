@@ -52,7 +52,7 @@
                     @foreach($users as $user)
                         <a class="contact-link" href="{{route('message.conversation',$user->id)}}">
                             <div class="media contact p-2 border-bottom border-gray">
-                                <div class="ava-bg bg-success text-light ">
+                            <div id="contact-id-{{$user->id}}" class="ava-bg text-light ">
                                     <span class="ava-init">{{ initials($user->name) }}</i></span>
                                 </div>
                                 <p class="media-body py-2 px-3 mb-0">
@@ -74,3 +74,32 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    $(function(){
+        let ipaddr= '127.0.0.1';
+        let port ='4848';
+        let socket= io(ipaddr+':'+port);
+        let user_id="{{ auth()->user()->id }}";
+        
+        socket.on('connect',function(){
+            socket.emit('user_conn',user_id)
+        });
+        
+        socket.on('updateUserStatus',function(data){
+            let $avaBgColor = $('.ava-bg');
+            $avaBgColor.removeClass('bg-success');
+            $avaBgColor.attr('title','Offline');
+
+            $.each(data,function(key,val){
+                if(val !== null && val !== 0){
+                    let $avaBg= $('#contact-id-'+key);
+                    $avaBg.addClass('bg-success');
+                    $avaBg.attr('title','Online');
+                }
+            })
+        });
+    });
+</script>
+@endpush
