@@ -21,4 +21,9 @@ Route::get('/', function () {
 Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-Route::get('conversation/{userId}', [App\Http\Controllers\MessageController::class, 'conversation'])->name('message.conversation');
+
+Route::get('conversation/{userId}', [App\Http\Controllers\MessageController::class, 'conversation'])
+->name('message.conversation');
+
+Route::post('send-message', [App\Http\Controllers\MessageController::class, 'sendMessage'])
+->name('message.send-message');
