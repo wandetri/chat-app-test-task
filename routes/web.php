@@ -22,6 +22,9 @@ Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
+Route::get('group-conversation', [App\Http\Controllers\MessageController::class, 'groupConversation'])
+->name('message.group-conversation');
+
 Route::get('conversation/{userId}', [App\Http\Controllers\MessageController::class, 'conversation'])
 ->name('message.conversation');
 
