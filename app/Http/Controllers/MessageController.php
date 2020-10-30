@@ -30,14 +30,21 @@ class MessageController extends Controller
         $this->data['myInfo'] = $myInfo;
         $this->data['userId'] = $userId;
         $this->data['messages'] = $messages;
+        $this->data['lastDate'] = $messages[0]->created_at;
 
         return view('message.conversation', $this->data);
 
     }
 
-    public function getMessagesConversation($userId, $lastDate){
+    public function getMessagesConversation(Request $request){
+        $request->validate([
+            'userId'=>'required',
+            'lastDate'=>'required'
+        ]);
+        $userId=$request->userId;
         $id=Auth::id();
-        $lasDates='2020-10-30 05:49:53';
+        $lastDate=$request->lastDate;
+
         $data = Message::latest()->take(10)->with('user_message')->whereHas('user_message', function($q) use ($userId,$id){
             $q->where(function($query) use ($userId,$id){
                 $query->where('sender_id',$userId)
@@ -46,7 +53,7 @@ class MessageController extends Controller
                 $query->where('sender_id',$id)
                     ->where('receiver_id',$userId);
             });
-        })->where('created_at','<','2020-10-30 05:49:53')->get()->sortBy('created_at');
+        })->where('created_at','<',$lastDate)->get()->sortBy('created_at');
 
         return response()->json([
             'data'=>$data,

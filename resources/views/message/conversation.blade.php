@@ -61,24 +61,19 @@
             let port = '4848';
             let socket = io(ipaddr + ':' + port);
             let user_id = "{{ auth()->user()->id }}";
+            let lastDate ="{{$lastDate}}";
 
             let $textMessage = $('#text-message-input');
             let $chatContainer =$('.chat-container');
             let $messageLoading = $('.chat-loading');
             moveScrollTo();
 
-            $chatContainer.scroll(function(e){
-                let scrollPosition = $chatContainer.scrollTop();
-                if(scrollPosition==0){
-                    $messageLoading.slideDown( 1000, function() {
-                        getMessage();
-                    });;
-                }
-            })
+            /* move scroll bar to end (true) half (false) */
             function moveScrollTo(half=false){
                 $chatContainer.scrollTop($chatContainer.height()/(half?2:1));
             }
             
+            /* generate chat bubble component */
             function chatBubbleGenerator(message,self=false){
                 return `
                 <div class="row chat-row${self?'-self':''}">
@@ -87,26 +82,6 @@
                     </div>
                 </div>`;
             }
-
-
-
-            socket.on('connect', function () {
-                socket.emit('user_conn', user_id)
-            });
-
-            socket.on('updateUserStatus', function (data) {
-                let $avaBgColor = $('.ava-bg');
-                $avaBgColor.removeClass('bg-success');
-                $avaBgColor.attr('title', 'Offline');
-
-                $.each(data, function (key, val) {
-                    if (val !== null && val !== 0) {
-                        let $avaBg = $('#contact-id-' + key);
-                        $avaBg.addClass('bg-success');
-                        $avaBg.attr('title', 'Online');
-                    }
-                })
-            });
 
             $textMessage.keypress(function (e) {
                 let message = $textMessage.val();
@@ -117,33 +92,49 @@
                 }
             });
 
-            function getMessage(lastDate){
-                let url = "{{ route('message.conversation-messages',['userId'=>$friendInfo->id,'lastDate'=>'1']) }}";
+            $chatContainer.scroll(function(e){
+                let scrollPosition = $chatContainer.scrollTop();
+                if(scrollPosition==0){
+                    $messageLoading.slideDown( 1000, function() {
+                        getMessage();
+                    });;
+                }
+            })
+
+            /* load previous conversation messages */
+            function getMessage(){
+                let url = "{{ route('message.conversation-messages') }}";
                 let form = $(this);
                 let formData = new FormData();
                 let token = "{{ csrf_token() }}";
                 let friendId = "{{ $friendInfo->id }}";
-
+                formData.append('userId', friendId);
+                formData.append('_token', token);
+                formData.append('lastDate', lastDate);
                 $.ajax({
                     url: url,
-                    type: 'GET',
+                    type: 'POST',
                     data: formData,
                     processData: false,
                     contentType: false,
                     dataType: 'JSON',
                     success: function (response) {
                         if (response.success) {
-                            console.log(response);
-                            $.each(response.data, function (key, message) {
-                                $chatContainer.prepend(chatBubbleGenerator(message,message.user_message.receiver_id==friendId));
-                            })
+                            let datasize=Object.keys(response.data).length;
+                            if(datasize>0){ 
+                                $.each(response.data, function (key, message) {
+                                    $chatContainer.prepend(chatBubbleGenerator(message,message.user_message.receiver_id==friendId));
+                                })
+                                lastDate=response.data[datasize-1].created_at;
+                                moveScrollTo(true);
+                            }
                             $messageLoading.slideUp();
-                            moveScrollTo(true);
                         }
                     }
                 })
             }
 
+            /* send message and append chat bubble*/
             function sendMessage(msg) {
                 let url = "{{ route('message.send-message') }}";
                 let form = $(this);
@@ -171,10 +162,32 @@
                 })
             }
 
+            /* socket processes */
+            /*------------------*/
+            socket.on('connect', function () {
+                socket.emit('user_conn', user_id)
+            });
+
+            socket.on('updateUserStatus', function (data) {
+                let $avaBgColor = $('.ava-bg');
+                $avaBgColor.removeClass('bg-success');
+                $avaBgColor.attr('title', 'Offline');
+
+                $.each(data, function (key, val) {
+                    if (val !== null && val !== 0) {
+                        let $avaBg = $('#contact-id-' + key);
+                        $avaBg.addClass('bg-success');
+                        $avaBg.attr('title', 'Online');
+                    }
+                })
+            });
+
             socket.on("private-channel:App\\Events\\PrivateMessageEvent", function (message) {
                 $chatContainer.append(chatBubbleGenerator(message));
                 moveScrollTo();
             });
+
+            /*------------------*/
 
         });
 
