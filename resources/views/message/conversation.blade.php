@@ -1,6 +1,7 @@
 @extends('layouts.app')
 @section('contact-init',initials($friendInfo->name))
 @section('contact-name',$friendInfo->name)
+@section('contact-id',$friendInfo->id)
 @section('content')
 <div class="container-fluid">
     <div class="row p-2 chat-loading">
@@ -23,7 +24,7 @@
         </div>
         <nav id="sidebarMenu" class="col-md-3 col-lg-2 bg-light sidebar ">
             <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-                <span>Online Member</span>
+                <span>All Member</span>
             </h6>
             <div class="sidebar-sticky pt-3">
                 @if($users->count())
@@ -32,7 +33,7 @@
                             href="{{ route('message.conversation',$user->id) }}">
                             <div
                                 class="media contact @if($user->id == $userId) active @endif p-2 border-bottom border-gray">
-                                <div id="contact-id-{{ $user->id }}" class="ava-bg text-light ">
+                                <div class="ava-bg text-light contact-id-{{ $user->id }}">
                                     <span class="ava-init">{{ initials($user->name) }}</i></span>
                                 </div>
                                 <p class="media-body py-2 px-3 mb-0">
@@ -49,7 +50,7 @@
 <div class="message-field bg-light flex-md-nowrap p-3 col-md-9 col-lg-10 input-group">
     <textarea id="text-message-input" class="form-control" placeholder="Type a Message"></textarea>
     <div class="input-group-append">
-        <button type="submit" class="btn btn-lg btn-send"><i class="fas fa-paper-plane"></i></button>
+        <button disabled id="button-send" type="submit" class="btn btn-lg btn-send"><i class="fas fa-paper-plane"></i></button>
     </div>
 </div>
 @endsection
@@ -66,7 +67,13 @@
             let $textMessage = $('#text-message-input');
             let $chatContainer =$('.chat-container');
             let $messageLoading = $('.chat-loading');
+            let $buttonSend =$('#button-send');
+
             moveScrollTo();
+
+            function htmlEntities(str) {
+                return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            }
 
             /* move scroll bar to end (true) half (false) */
             function moveScrollTo(half=false){
@@ -78,7 +85,7 @@
                 return `
                 <div class="row chat-row${self?'-self':''}">
                     <div class="chat-bubble ${self?'offset-md-7':''} p-3 col-md-5">
-                        <p>${message.message}</p>
+                        <p>${htmlEntities(message.message)}</p>
                     </div>
                 </div>`;
             }
@@ -90,6 +97,21 @@
                     event.preventDefault();
                     sendMessage(message);
                 }
+            });
+
+            $textMessage.keyup(function(e){
+                if(($textMessage.val().trim().length > 0)){
+                    $buttonSend.prop( "disabled", false );
+                }else{
+                    $buttonSend.prop( "disabled", true );
+                }
+            })
+
+            $buttonSend.on('click',function(){
+                let message = $textMessage.val();
+                $textMessage.val('');
+                sendMessage(message);
+                $buttonSend.prop( "disabled", true );
             });
 
             $chatContainer.scroll(function(e){
@@ -175,7 +197,7 @@
 
                 $.each(data, function (key, val) {
                     if (val !== null && val !== 0) {
-                        let $avaBg = $('#contact-id-' + key);
+                        let $avaBg = $('.contact-id-' + key);
                         $avaBg.addClass('bg-success');
                         $avaBg.attr('title', 'Online');
                     }

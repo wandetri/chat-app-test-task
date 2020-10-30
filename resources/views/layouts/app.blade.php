@@ -28,12 +28,12 @@
         <nav class="navbar navbar-expand-md navbar-light bg-prim shadow-sm">
             <div class="container-fluid">
                 <div class="media p-2 ">
-                    <div id="contact-id" class="ava-bg text-light ">
+                    <div class="ava-bg text-light contact-id-@yield('contact-id')">
                         <span class="ava-init">@yield('contact-init')</i></span>
                     </div>
-                    <p class="media-body py-2 px-3 mb-0 text-light">
+                    <h5 class="media-body py-2 px-3 mb-0 text-light">
                         @yield('contact-name')
-                    </p>
+                    </h5>
                 </div>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
                     <i class="fa fa-ellipsis-v"></i>

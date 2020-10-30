@@ -16,6 +16,7 @@ class MessageController extends Controller
         $users = User::where('id','!=',$id)->get();
         $friendInfo = User::findOrFail($userId);
         $myInfo = User::find($id);
+        /* get last 10 messages between sender_id and receiver_id */
         $messages = Message::latest()->take(10)->with('user_message')->whereHas('user_message', function($q) use ($userId,$id){
             $q->where(function($query) use ($userId,$id){
                 $query->where('sender_id',$userId)
@@ -30,7 +31,7 @@ class MessageController extends Controller
         $this->data['myInfo'] = $myInfo;
         $this->data['userId'] = $userId;
         $this->data['messages'] = $messages;
-        $this->data['lastDate'] = $messages[0]->created_at;
+        $this->data['lastDate'] = $messages->count()?$messages[$messages->count()-1]->created_at:'';
 
         return view('message.conversation', $this->data);
 
