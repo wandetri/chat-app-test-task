@@ -25,5 +25,9 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 Route::get('conversation/{userId}', [App\Http\Controllers\MessageController::class, 'conversation'])
 ->name('message.conversation');
 
+Route::get('messages/{userId}/{lastDate}', [App\Http\Controllers\MessageController::class, 'getMessagesConversation'])
+->name('message.conversation-messages');
+
+
 Route::post('send-message', [App\Http\Controllers\MessageController::class, 'sendMessage'])
 ->name('message.send-message');

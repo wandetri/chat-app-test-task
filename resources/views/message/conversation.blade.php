@@ -5,7 +5,15 @@
 <div class="container-fluid">
     <div class="row">
         <div class="chat-container col-md-9 col-lg-10 p-3">
-           
+        @if($messages->count())
+            @foreach($messages as $message)
+                <div class="row {{($message->user_message->sender_id==$userId)?'chat-row':'chat-row-self'}}">
+                    <div class="chat-bubble p-3 col-md-5 {{($message->user_message->sender_id!=$userId)?'offset-md-7':''}}">
+                        <p>{{$message->message}}</p>
+                    </div>
+                </div>
+            @endforeach
+        @endif
         </div>
         <nav id="sidebarMenu" class="col-md-3 col-lg-2 bg-light sidebar ">
             <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
@@ -51,17 +59,24 @@
             let user_id = "{{ auth()->user()->id }}";
 
             let $textMessage = $('#text-message-input');
-            function appendChatBubble(message,self=false){
-                let chatBubble=`
+            let $chatContainer =$('.chat-container');
+            scrollToEnd();
+
+            function scrollToEnd(){
+                $chatContainer.scrollTop($chatContainer.height());
+            }
+            
+            function chatBubbleGenerator(message,self=false){
+                return `
                 <div class="row chat-row${self?'-self':''}">
                     <div class="chat-bubble ${self?'offset-md-7':''} p-3 col-md-5">
                         <p>${message.message}</p>
                     </div>
                 </div>`;
-
-                $('.chat-container').append(chatBubble);
-                $('.chat-container').scrollTop($('.chat-container').height()); 
             }
+
+
+
             socket.on('connect', function () {
                 socket.emit('user_conn', user_id)
             });
@@ -89,7 +104,27 @@
                 }
             });
 
+            function getMessage(lastDate){
+                let url = "{{ route('message.conversation-messages',['userId'=>'1','lastDate'=>'1']) }}";
+                let form = $(this);
+                let formData = new FormData();
+                let token = "{{ csrf_token() }}";
 
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    dataType: 'JSON',
+                    success: function (response) {
+                        if (response.success) {
+                            console.log(response.data.length);
+                            // appendChatBubble(response.data,true);
+                        }
+                    }
+                })
+            }
             function sendMessage(msg) {
                 let url = "{{ route('message.send-message') }}";
                 let form = $(this);
@@ -110,14 +145,16 @@
                     dataType: 'JSON',
                     success: function (response) {
                         if (response.success) {
-                            appendChatBubble(response.data,true);
+                            $chatContainer.append(chatBubbleGenerator(response.data,true));
+                            scrollToEnd();
                         }
                     }
                 })
             }
 
             socket.on("private-channel:App\\Events\\PrivateMessageEvent", function (message) {
-                appendChatBubble(message);
+                $chatContainer.append(chatBubbleGenerator(message));
+                scrollToEnd();
             });
 
         });
