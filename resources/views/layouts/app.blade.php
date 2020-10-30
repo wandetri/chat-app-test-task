@@ -29,7 +29,7 @@
             <div class="container-fluid">
                 <div class="media p-2 ">
                     <div class="ava-bg text-light contact-id-@yield('contact-id')">
-                        <span class="ava-init">@yield('contact-init')</i></span>
+                        <span class="ava-init">@yield('contact-init')</span>
                     </div>
                     <h5 class="media-body py-2 px-3 mb-0 text-light">
                         @yield('contact-name')
