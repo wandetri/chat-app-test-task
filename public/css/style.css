@@ -39,7 +39,9 @@ label:focus,
     -webkit-appearance: none;
     box-shadow: none !important;
 }
-
+.invalid-feedback{
+    color:white;
+}
 .form-signin {
     width: 100%;
     max-width: 420px;
