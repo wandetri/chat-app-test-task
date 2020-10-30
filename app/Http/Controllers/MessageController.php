@@ -6,6 +6,7 @@ use App\Models\Message;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Events\PrivateMessageEvent;
 
 class MessageController extends Controller
 {
@@ -42,9 +43,11 @@ class MessageController extends Controller
                 $data['sender_id'] = $sender_id;
                 $data['sender_name'] = $sender->name;
                 $data['receiver_id'] = $receiver_id;
-                $data['content'] = $message->message;
+                $data['message'] = $message->message;
                 $data['created_at'] = $message->created_at;
                 $data['message_id'] = $message->id;
+
+                event(new PrivateMessageEvent($data));
 
                 return response()->json([
                     'data'=>$data,
@@ -53,7 +56,7 @@ class MessageController extends Controller
                 ]);
             }catch(\Exception $e){
                 $message->delete();
-                dd($e);
+                // dd($e);
             }
         }
     }

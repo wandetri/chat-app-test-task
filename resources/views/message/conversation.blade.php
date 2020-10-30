@@ -4,22 +4,7 @@
 <div class="container-fluid">
     <div class="row">
         <div class="chat-container col-md-9 col-lg-10 p-3">
-            <div class="row chat-row">
-                <div class="chat-bubble p-3 col-md-5">
-                    <strong>Username</strong>
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit, consequuntur reprehenderit itaque
-                        pariatur minus iusto, voluptas corporis dolore dolorem qui, cupiditate a sit aperiam enim eius
-                        illo rerum omnis quod.</p>
-                </div>
-            </div>
-            <div class="row chat-row">
-                <div class="chat-bubble p-3 col-md-5">
-                    <strong>Username</strong>
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit, consequuntur reprehenderit itaque
-                        pariatur minus iusto, voluptas corporis dolore dolorem qui, cupiditate a sit aperiam enim eius
-                        illo rerum omnis quod.</p>
-                </div>
-            </div>
+           
         </div>
         <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
             <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
@@ -65,7 +50,17 @@
             let user_id = "{{ auth()->user()->id }}";
 
             let $textMessage = $('#text-message-input');
+            function appendChatBubble(message,self=false){
+                let chatBubble=`
+                <div class="row chat-row${self?'-self':''}">
+                    <div class="chat-bubble ${self?'offset-md-7':''} p-3 col-md-5">
+                        <p>${message.message}</p>
+                    </div>
+                </div>`;
 
+                $('.chat-container').append(chatBubble);
+                $('.chat-container').scrollTop($('.chat-container').height()); 
+            }
             socket.on('connect', function () {
                 socket.emit('user_conn', user_id)
             });
@@ -87,7 +82,8 @@
             $textMessage.keypress(function (e) {
                 let message = $textMessage.val();
                 if (e.keyCode == 13 && !e.shiftKey) {
-                    $textMessage.html('');
+                    $textMessage.val('');
+                    event.preventDefault();
                     sendMessage(message);
                 }
             });
@@ -97,8 +93,8 @@
                 let url = "{{ route('message.send-message') }}";
                 let form = $(this);
                 let formData = new FormData();
-                let token = "{{csrf_token()}}";
-                let friendId = "{{ $friendInfo->id }}" ;
+                let token = "{{ csrf_token() }}";
+                let friendId = "{{ $friendInfo->id }}";
 
                 formData.append('message', msg);
                 formData.append('_token', token);
@@ -111,14 +107,17 @@
                     processData: false,
                     contentType: false,
                     dataType: 'JSON',
-                    success: function(response){
-                    console.log(response);
-                        if(response.success){
-                            console.log(response);
+                    success: function (response) {
+                        if (response.success) {
+                            appendChatBubble(response.data,true);
                         }
                     }
                 })
             }
+
+            socket.on("private-channel:App\\Events\\PrivateMessageEvent", function (message) {
+                appendChatBubble(message);
+            });
 
         });
 
