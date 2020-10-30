@@ -219,7 +219,7 @@
       font-size: 14px;
       color: #333;
       background-color: #dce7ff;
-      height: calc(87vh - 48px);
+      height: calc(87vh - 72px);
       position: fixed;
       left: 0;
       z-index: 99;
@@ -237,14 +237,14 @@
   }
    .chat-row .chat-bubble{
      background-color: white;
-     border-radius: 15px;
+     border-radius: 5px;
      -webkit-box-shadow: 0px 0px 13px -8px rgba(0,0,0,0.5); 
      box-shadow: 0px 0px 13px -8px rgba(0,0,0,0.5);
    }
   
    .chat-row-self .chat-bubble{
     background-color: #99b9ff;
-    border-radius: 15px;
+    border-radius: 5px;
     -webkit-box-shadow: 0px 0px 13px -8px rgba(0,0,0,0.5); 
     box-shadow: 0px 0px 13px -8px rgba(0,0,0,0.5);
   }
@@ -266,20 +266,16 @@
     bottom: 0;
     right: 0;
     z-index: 102; /* Behind the navbar */
-    padding: 48px 0 0; /* Height of navbar */
+    padding: 72px 0 0; /* Height of navbar */
     box-shadow: inset 1px 0 0 rgba(0, 0, 0, .1);
   }
   
-  @media (max-width: 767.98px) {
-    .sidebar {
-      top: 5rem;
-    }
-  }
+ 
   
   .sidebar-sticky {
     position: relative;
     top: 0;
-    height: calc(100vh - 48px);
+    height: calc(100vh - 72px);
     padding-top: .5rem;
     overflow-x: hidden;
     overflow-y: auto; 
@@ -335,6 +331,7 @@
   .navbar .navbar-toggler {
     top: .25rem;
     right: 1rem;
+    border: none;
   }
   
   .navbar .form-control {
@@ -359,12 +356,12 @@
   */
   
   .message-field {
-    height: 13vh;
+    min-height: 13vh;
     position: fixed;
     bottom: 0;
     left: 0;
-    z-index: 102; /* Behind the navbar */
-    padding: 48px 0 0; /* Height of navbar */
+    z-index: 102; 
+    padding: 48px 0 0;
     box-shadow: inset 0 1px 0 rgba(0, 0, 0, .1);
   }
   

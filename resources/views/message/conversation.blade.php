@@ -1,12 +1,13 @@
 @extends('layouts.app')
-
+@section('contact-init',initials($friendInfo->name))
+@section('contact-name',$friendInfo->name)
 @section('content')
 <div class="container-fluid">
     <div class="row">
         <div class="chat-container col-md-9 col-lg-10 p-3">
            
         </div>
-        <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+        <nav id="sidebarMenu" class="col-md-3 col-lg-2 bg-light sidebar ">
             <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
                 <span>Online Member</span>
             </h6>
