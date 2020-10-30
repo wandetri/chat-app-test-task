@@ -11,6 +11,17 @@ use App\Models\UserMessage;
 
 class MessageController extends Controller
 {
+    public function groupConversation(){
+        $id=Auth::id();
+        $users = User::where('id','!=',$id)->get();
+        $myInfo = User::find($id);
+        $this->data['users'] = $users;
+        $this->data['myInfo'] = $myInfo;
+
+        $this->data['lastDate'] = ''; //$messages->count()?$messages[$messages->count()-1]->created_at:'';
+        return view('message.group-conversation',$this->data);
+    }
+    
     public function conversation($userId){
         $id=Auth::id();
         $users = User::where('id','!=',$id)->get();
@@ -49,10 +60,12 @@ class MessageController extends Controller
         $data = Message::latest()->take(10)->with('user_message')->whereHas('user_message', function($q) use ($userId,$id){
             $q->where(function($query) use ($userId,$id){
                 $query->where('sender_id',$userId)
-                    ->where('receiver_id',$id);
+                    ->where('receiver_id',$id)
+                    ->where('chat_type',0);
             })->orWhere(function($query) use ($userId,$id){
                 $query->where('sender_id',$id)
-                    ->where('receiver_id',$userId);
+                    ->where('receiver_id',$userId)
+                    ->where('chat_type',0);
             });
         })->where('created_at','<',$lastDate)->get()->sortBy('created_at');
 
