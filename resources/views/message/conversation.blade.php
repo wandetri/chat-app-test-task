@@ -3,8 +3,8 @@
 @section('contact-name',$friendInfo->name)
 @section('content')
 <div class="container-fluid">
-    <div class="row p-2 justify-content-md-center chat-loading">
-        <div clas="col-md-12">
+    <div class="row p-2 chat-loading">
+        <div class="d-flex col-md-10 justify-content-md-center">
             <span class="spinner-border text-secondary" role="status">
             </span>
         </div>
