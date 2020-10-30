@@ -23,6 +23,18 @@
         @endif
         </div>
         <nav id="sidebarMenu" class="col-md-3 col-lg-2 bg-light sidebar ">
+            <a class="contact-link"
+        href="{{route('message.group-conversation')}}">
+                <div
+                    class="media contact p-2 border-bottom border-gray">
+                    <div class="ava-bg text-light contact-id">
+                        <span class="ava-init"><i class="fa fa-users"></i></span>
+                    </div>
+                    <p class="media-body py-2 px-3 mb-0">
+                        Group Chat
+                    </p>
+                </div>
+            </a>
             <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
                 <span>All Member</span>
             </h6>
