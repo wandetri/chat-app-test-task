@@ -3,6 +3,12 @@
 @section('contact-name',$friendInfo->name)
 @section('content')
 <div class="container-fluid">
+    <div class="row p-2 justify-content-md-center chat-loading">
+        <div clas="col-md-12">
+            <span class="spinner-border text-secondary" role="status">
+            </span>
+        </div>
+    </div>
     <div class="row">
         <div class="chat-container col-md-9 col-lg-10 p-3">
         @if($messages->count())
@@ -51,8 +57,6 @@
 @push('scripts')
     <script>
         $(function () {
-
-
             let ipaddr = '127.0.0.1';
             let port = '4848';
             let socket = io(ipaddr + ':' + port);
@@ -60,10 +64,19 @@
 
             let $textMessage = $('#text-message-input');
             let $chatContainer =$('.chat-container');
-            scrollToEnd();
+            let $messageLoading = $('.chat-loading');
+            moveScrollTo();
 
-            function scrollToEnd(){
-                $chatContainer.scrollTop($chatContainer.height());
+            $chatContainer.scroll(function(e){
+                let scrollPosition = $chatContainer.scrollTop();
+                if(scrollPosition==0){
+                    $messageLoading.slideDown( 1000, function() {
+                        getMessage();
+                    });;
+                }
+            })
+            function moveScrollTo(half=false){
+                $chatContainer.scrollTop($chatContainer.height()/(half?2:1));
             }
             
             function chatBubbleGenerator(message,self=false){
@@ -105,10 +118,11 @@
             });
 
             function getMessage(lastDate){
-                let url = "{{ route('message.conversation-messages',['userId'=>'1','lastDate'=>'1']) }}";
+                let url = "{{ route('message.conversation-messages',['userId'=>$friendInfo->id,'lastDate'=>'1']) }}";
                 let form = $(this);
                 let formData = new FormData();
                 let token = "{{ csrf_token() }}";
+                let friendId = "{{ $friendInfo->id }}";
 
                 $.ajax({
                     url: url,
@@ -119,12 +133,17 @@
                     dataType: 'JSON',
                     success: function (response) {
                         if (response.success) {
-                            console.log(response.data.length);
-                            // appendChatBubble(response.data,true);
+                            console.log(response);
+                            $.each(response.data, function (key, message) {
+                                $chatContainer.prepend(chatBubbleGenerator(message,message.user_message.receiver_id==friendId));
+                            })
+                            $messageLoading.slideUp();
+                            moveScrollTo(true);
                         }
                     }
                 })
             }
+
             function sendMessage(msg) {
                 let url = "{{ route('message.send-message') }}";
                 let form = $(this);
@@ -146,7 +165,7 @@
                     success: function (response) {
                         if (response.success) {
                             $chatContainer.append(chatBubbleGenerator(response.data,true));
-                            scrollToEnd();
+                            moveScrollTo();
                         }
                     }
                 })
@@ -154,7 +173,7 @@
 
             socket.on("private-channel:App\\Events\\PrivateMessageEvent", function (message) {
                 $chatContainer.append(chatBubbleGenerator(message));
-                scrollToEnd();
+                moveScrollTo();
             });
 
         });
