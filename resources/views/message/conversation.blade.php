@@ -23,7 +23,7 @@
         @endif
         </div>
         <nav id="sidebarMenu" class="col-md-3 col-lg-2 bg-light sidebar ">
-            <a class="contact-link"
+            <a class="contact-group"
         href="{{route('message.group-conversation')}}">
                 <div
                     class="media contact p-2 border-bottom border-gray">
@@ -36,23 +36,26 @@
                 </div>
             </a>
             <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-                <span>All Member</span>
+                <span id="text-member">All Member</span>
+                <div class="custom-control custom-switch">
+                    <input type="checkbox" class="custom-control-input" id="onlineSwitch">
+                    <label class="custom-control-label" for="onlineSwitch"></label>
+                </div>
             </h6>
             <div class="sidebar-sticky pt-3">
                 @if($users->count())
                     @foreach($users as $user)
-                        <a class="contact-link"
-                            href="{{ route('message.conversation',$user->id) }}">
-                            <div
-                                class="media contact @if($user->id == $userId) active @endif p-2 border-bottom border-gray">
-                                <div class="ava-bg text-light contact-id-{{ $user->id }}">
-                                    <span class="ava-init">{{ initials($user->name) }}</i></span>
-                                </div>
-                                <p class="media-body py-2 px-3 mb-0">
-                                    {{ $user->name }}
-                                </p>
+                    <a class="contact-link contact-id-{{ $user->id }}"
+                        href="{{ route('message.conversation',$user->id) }}">
+                        <div class="media contact p-2 border-bottom border-gray">
+                            <div class="ava-bg text-light">
+                                <span class="ava-init">{{ initials($user->name) }}</i></span>
                             </div>
-                        </a>
+                            <p class="media-body py-2 px-3 mb-0">
+                                {{ $user->name }}
+                            </p>
+                        </div>
+                    </a>
                     @endforeach
                 @endif
             </div>
@@ -80,6 +83,9 @@
             let $chatContainer =$('.chat-container');
             let $messageLoading = $('.chat-loading');
             let $buttonSend =$('#button-send');
+            let $onlineSwitch = $('#onlineSwitch');
+            let $textMember = $('#text-member');
+            let $contactLink = $('.contact-link');
 
             moveScrollTo();
 
@@ -101,6 +107,15 @@
                     </div>
                 </div>`;
             }
+
+            $onlineSwitch.change(function (e) {
+                if (this.checked) {
+                    $textMember.text('Online Member');
+                } else {
+                    $textMember.text('All Member');
+                }
+                $('.contact-link:not(.contact-online)').toggle()
+            });
 
             $textMessage.keypress(function (e) {
                 let message = $textMessage.val();
@@ -209,7 +224,9 @@
 
                 $.each(data, function (key, val) {
                     if (val !== null && val !== 0) {
-                        let $avaBg = $('.contact-id-' + key);
+                        let $avaBg = $('.contact-id-' + key + ' .ava-bg');
+                        $('.contact-id-' + key).addClass('contact-online');
+
                         $avaBg.addClass('bg-success');
                         $avaBg.attr('title', 'Online');
                     }

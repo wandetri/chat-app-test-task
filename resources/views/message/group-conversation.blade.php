@@ -14,20 +14,22 @@
     </div>
     <div class="row">
         <div class="chat-container col-md-9 col-lg-10 p-3">
-        {{-- @if($messages->count())
-            @foreach($messages as $message)
-                <div class="row {{($message->user_message->sender_id==$userId)?'chat-row':'chat-row-self'}}">
-                    <div class="chat-bubble p-3 col-md-5 {{($message->user_message->sender_id!=$userId)?'offset-md-7':''}}">
-                        <p>{{$message->message}}</p>
+            @if($messages->count())
+                @foreach($messages as $message)
+                    <div
+                        class="row {{ ($message->user_message->sender_id!=$myInfo->id)?'chat-row':'chat-row-self' }}">
+                        <p></p>
+                        <div
+                            class="chat-bubble p-3 col-md-5 {{ ($message->user_message->sender_id==$myInfo->id)?'offset-md-7':'' }}">
+                            <p>{{ $message->message }}</p>
+                        </div>
                     </div>
-                </div>
-            @endforeach
-        @endif --}}
+                @endforeach
+            @endif
         </div>
         <nav id="sidebarMenu" class="col-md-3 col-lg-2 bg-light sidebar ">
-            <a class="contact-link" href="">
-                <div
-                    class="media contact p-2 active border-bottom border-gray">
+            <a class="contact-group" href="">
+                <div class="media contact p-2 active border-bottom border-gray">
                     <div class="ava-bg text-light contact-id">
                         <span class="ava-init"><i class="fa fa-users"></i></span>
                     </div>
@@ -36,17 +38,20 @@
                     </p>
                 </div>
             </a>
-            <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-                <span>All Member</span>
+            <h6 title="Filter Online Member" class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                <span id="text-member">All Member</span>
+                <div class="custom-control custom-switch">
+                    <input type="checkbox" class="custom-control-input" id="onlineSwitch">
+                    <label class="custom-control-label" for="onlineSwitch"></label>
+                </div>
             </h6>
             <div class="sidebar-sticky pt-3">
                 @if($users->count())
                     @foreach($users as $user)
-                        <a class="contact-link"
+                        <a class="contact-link contact-id-{{ $user->id }}"
                             href="{{ route('message.conversation',$user->id) }}">
-                            <div
-                                class="media contact p-2 border-bottom border-gray">
-                                <div class="ava-bg text-light contact-id-{{ $user->id }}">
+                            <div class="media contact p-2 border-bottom border-gray">
+                                <div class="ava-bg text-light">
                                     <span class="ava-init">{{ initials($user->name) }}</i></span>
                                 </div>
                                 <p class="media-body py-2 px-3 mb-0">
@@ -63,7 +68,8 @@
 <div class="message-field bg-light flex-md-nowrap p-3 col-md-9 col-lg-10 input-group">
     <textarea id="text-message-input" class="form-control" placeholder="Type a Message"></textarea>
     <div class="input-group-append">
-        <button disabled id="button-send" type="submit" class="btn btn-lg btn-send"><i class="fas fa-paper-plane"></i></button>
+        <button disabled id="button-send" type="submit" class="btn btn-lg btn-send"><i
+                class="fas fa-paper-plane"></i></button>
     </div>
 </div>
 @endsection
@@ -75,26 +81,30 @@
             let port = '4848';
             let socket = io(ipaddr + ':' + port);
             let user_id = "{{ auth()->user()->id }}";
-            // let lastDate ="{{$lastDate}}";
+            let lastDate = "{{ $lastDate }}";
 
             let $textMessage = $('#text-message-input');
-            let $chatContainer =$('.chat-container');
+            let $chatContainer = $('.chat-container');
             let $messageLoading = $('.chat-loading');
-            let $buttonSend =$('#button-send');
+            let $buttonSend = $('#button-send');
+            let $onlineSwitch = $('#onlineSwitch');
+            let $textMember = $('#text-member');
+            let $contactLink = $('.contact-link');
 
             moveScrollTo();
 
             function htmlEntities(str) {
-                return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(
+                    /"/g, '&quot;');
             }
 
             /* move scroll bar to end (true) half (false) */
-            function moveScrollTo(half=false){
-                $chatContainer.scrollTop($chatContainer.height()/(half?2:1));
+            function moveScrollTo(half = false) {
+                $chatContainer.scrollTop($chatContainer.height() / (half ? 2 : 1));
             }
-            
+
             /* generate chat bubble component */
-            function chatBubbleGenerator(message,self=false){
+            function chatBubbleGenerator(message, self = false) {
                 return `
                 <div class="row chat-row${self?'-self':''}">
                     <div class="chat-bubble ${self?'offset-md-7':''} p-3 col-md-5">
@@ -102,6 +112,15 @@
                     </div>
                 </div>`;
             }
+            
+            $onlineSwitch.change(function (e) {
+                if (this.checked) {
+                    $textMember.text('Online Member');
+                } else {
+                    $textMember.text('All Member');
+                }
+                $('.contact-link:not(.contact-online)').toggle()
+            });
 
             $textMessage.keypress(function (e) {
                 let message = $textMessage.val();
@@ -112,32 +131,32 @@
                 }
             });
 
-            $textMessage.keyup(function(e){
-                if(($textMessage.val().trim().length > 0)){
-                    $buttonSend.prop( "disabled", false );
-                }else{
-                    $buttonSend.prop( "disabled", true );
+            $textMessage.keyup(function (e) {
+                if (($textMessage.val().trim().length > 0)) {
+                    $buttonSend.prop("disabled", false);
+                } else {
+                    $buttonSend.prop("disabled", true);
                 }
             })
 
-            $buttonSend.on('click',function(){
+            $buttonSend.on('click', function () {
                 let message = $textMessage.val();
                 $textMessage.val('');
                 sendMessage(message);
-                $buttonSend.prop( "disabled", true );
+                $buttonSend.prop("disabled", true);
             });
 
-            $chatContainer.scroll(function(e){
+            $chatContainer.scroll(function (e) {
                 let scrollPosition = $chatContainer.scrollTop();
-                if(scrollPosition==0){
-                    $messageLoading.slideDown( 1000, function() {
+                if (scrollPosition == 0) {
+                    $messageLoading.slideDown(1000, function () {
                         getMessage();
                     });;
                 }
             })
 
             /* load previous conversation messages */
-            function getMessage(){
+            function getMessage() {
                 let url = "{{ route('message.conversation-messages') }}";
                 let form = $(this);
                 let formData = new FormData();
@@ -146,6 +165,7 @@
                 formData.append('userId', 0);
                 formData.append('_token', token);
                 formData.append('lastDate', lastDate);
+                formData.append('is_group', 1);
                 $.ajax({
                     url: url,
                     type: 'POST',
@@ -155,12 +175,13 @@
                     dataType: 'JSON',
                     success: function (response) {
                         if (response.success) {
-                            let datasize=Object.keys(response.data).length;
-                            if(datasize>0){ 
+                            let datasize = Object.keys(response.data).length;
+                            if (datasize > 0) {
                                 $.each(response.data, function (key, message) {
-                                    $chatContainer.prepend(chatBubbleGenerator(message,message.user_message.receiver_id==friendId));
+                                    $chatContainer.prepend(chatBubbleGenerator(message,
+                                        message.user_message.sender_id == user_id));
                                 })
-                                lastDate=response.data[datasize-1].created_at;
+                                lastDate = response.data[datasize - 1].created_at;
                                 moveScrollTo(true);
                             }
                             $messageLoading.slideUp();
@@ -178,7 +199,8 @@
 
                 formData.append('message', msg);
                 formData.append('_token', token);
-                formData.append('receiver_id', friendId);
+                formData.append('receiver_id', 0);
+                formData.append('is_group', 1);
 
                 $.ajax({
                     url: url,
@@ -188,10 +210,10 @@
                     contentType: false,
                     dataType: 'JSON',
                     success: function (response) {
-                        if (response.success) {
-                            $chatContainer.append(chatBubbleGenerator(response.data,true));
-                            moveScrollTo();
-                        }
+                        // if (response.success) {
+                        //     $chatContainer.append(chatBubbleGenerator(response.data,true));
+                        //     moveScrollTo();
+                        // }
                     }
                 })
             }
@@ -205,21 +227,29 @@
             socket.on('updateUserStatus', function (data) {
                 let $avaBgColor = $('.ava-bg');
                 $avaBgColor.removeClass('bg-success');
+                $contactLink.removeClass('contact-online');
                 $avaBgColor.attr('title', 'Offline');
 
                 $.each(data, function (key, val) {
                     if (val !== null && val !== 0) {
-                        let $avaBg = $('.contact-id-' + key);
+                        let $avaBg = $('.contact-id-' + key + ' .ava-bg');
+                        $('.contact-id-' + key).addClass('contact-online');
+
                         $avaBg.addClass('bg-success');
                         $avaBg.attr('title', 'Online');
                     }
                 })
             });
-
-            socket.on("private-channel:App\\Events\\PrivateMessageEvent", function (message) {
-                $chatContainer.append(chatBubbleGenerator(message));
+            socket.on("groupMessage", function (message) {
+                $chatContainer.append(chatBubbleGenerator(message, message.sender_id == user_id));
                 moveScrollTo();
+                // alert('haha');
             });
+
+            // socket.on("group-channel:App\\Events\\GroupMessageEvent", function (message) {
+            //     $chatContainer.append(chatBubbleGenerator(message));
+            //     moveScrollTo();
+            // });
 
             /*------------------*/
 

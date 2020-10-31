@@ -27,7 +27,8 @@ redis.on('message', function(channel,message){
         let receiver_id = data.receiver_id;
         io.to(`${users[receiver_id]}`).emit(channel+':'+event, data);
     }else if(channel == 'group-channel'){
-        io.to(`group-1`).emit(channel+':'+event, data);
+        // io.to(`group-1`).emit(channel+':'+event, data);
+        io.emit('groupMessage', data);
     }
 });
 

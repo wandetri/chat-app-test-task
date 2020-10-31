@@ -197,7 +197,7 @@ label:focus,
     background-color: var(--color-prim);
 }
 
-.contact-link {
+.contact-link,.contact-group {
     text-decoration: none !important;
 }
 
@@ -359,6 +359,12 @@ label:focus,
     border-radius: 4px
 }
 
+
+.custom-control-input:checked ~ .custom-control-label::before {
+    color: #fff;
+    border-color: #38c172;
+    background-color: #38c172;
+  }
 /*
    * Navbar
    */
