@@ -1,5 +1,5 @@
 # Simple Chat Application
-Simple Realtime Chat Application utilizing Laravel, MySQL, Redis, Socket.io
+Simple Realtime Chat Application utilizing Laravel, MySQL, Redis & Socket.io<br>
 The socket connection is authenticated using JWT.
 
 ## Features
