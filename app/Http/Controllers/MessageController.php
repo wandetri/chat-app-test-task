@@ -18,9 +18,9 @@ class MessageController extends Controller
         $myInfo = User::find($id);
         $this->data['users'] = $users;
         $this->data['myInfo'] = $myInfo;
-
+        
         /* get last 10 messages in group conversation */
-        $messages = Message::latest()->take(10)->with('user_message')->whereHas('user_message', function($q) {
+        $messages = Message::latest()->take(10)->with('user_message.user')->whereHas('user_message', function($q) {
             $q->where(function($query) {
                 $query->where('receiver_id',0)
                 ->where('chat_type',1);

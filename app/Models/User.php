@@ -40,4 +40,8 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function user_messages(){
+        return $this->hasOne(UserMessage::class,'sender_id');
+    }
 }

@@ -18,9 +18,9 @@
                 @foreach($messages as $message)
                     <div
                         class="row {{ ($message->user_message->sender_id!=$myInfo->id)?'chat-row':'chat-row-self' }}">
-                        <p></p>
                         <div
                             class="chat-bubble p-3 col-md-5 {{ ($message->user_message->sender_id==$myInfo->id)?'offset-md-7':'' }}">
+                            <strong>{{$message->user_message->user->name}}</strong>
                             <p>{{ $message->message }}</p>
                         </div>
                     </div>
