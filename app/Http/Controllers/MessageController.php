@@ -9,13 +9,19 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Events\PrivateMessageEvent;
 use App\Models\UserMessage;
+use Tymon\JWTAuth\Facades\JWTAuth;
+
 
 class MessageController extends Controller
 {
-    public function groupConversation(){
+    public function groupConversation(\Tymon\JWTAuth\JWTAuth $auth ){
+        $user=Auth::user();
         $id=Auth::id();
         $users = User::where('id','!=',$id)->get()->sortBy('name');
         $myInfo = User::find($id);
+
+        $token = $auth->fromUser($user,['id'=>$user->id, 'email'=>$user->email]);
+
         $this->data['users'] = $users;
         $this->data['myInfo'] = $myInfo;
         
@@ -32,14 +38,18 @@ class MessageController extends Controller
 
         $this->data['messages'] = $messages;
         $this->data['lastDate'] = $messages->count()?$messages[$messages->count()-1]->created_at:'';
+        $this->data['token'] = $token;
         return view('message.group-conversation',$this->data);
     }
     
-    public function conversation($userId){
+    public function conversation($userId,\Tymon\JWTAuth\JWTAuth $auth ){
+        $user=Auth::user();
         $id=Auth::id();
         $users = User::where('id','!=',$id)->get()->sortBy('name');
         $friendInfo = User::findOrFail($userId);
         $myInfo = User::find($id);
+
+        $token = $auth->fromUser($user,['id'=>$user->id, 'email'=>$user->email]);
 
         /* get last 10 messages between sender_id and receiver_id */
         $messages = Message::latest()->take(10)->with('user_message')->whereHas('user_message', function($q) use ($userId,$id){
@@ -60,6 +70,7 @@ class MessageController extends Controller
         $this->data['userId'] = $userId;
         $this->data['messages'] = $messages;
         $this->data['lastDate'] = $messages->count()?$messages[$messages->count()-1]->created_at:'';
+        $this->data['token'] = $token;
 
         return view('message.conversation', $this->data);
 

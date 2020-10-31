@@ -20,7 +20,8 @@ Route::get('/', function () {
 
 Auth::routes();
 Route::group(['middleware' => ['auth']], function() {
-    Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+    Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])
+    ->name('home');
 
     Route::get('group-conversation', [App\Http\Controllers\MessageController::class, 'groupConversation'])
     ->name('message.group-conversation');
@@ -34,5 +35,9 @@ Route::group(['middleware' => ['auth']], function() {
 
     Route::post('send-message', [App\Http\Controllers\MessageController::class, 'sendMessage'])
     ->name('message.send-message');
+
+    Route::get('token', [App\Http\Controllers\TokenController::class, 'getToken'])
+    ->name('token.get');;
+
 
 });

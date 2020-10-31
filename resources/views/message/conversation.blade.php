@@ -73,9 +73,17 @@
 @push('scripts')
     <script>
         $(function () {
+
+            let token = "{{ csrf_token() }}";
+            let jwt ="{{$token}}";
+
             let ipaddr = '127.0.0.1';
             let port = '4848';
-            let socket = io(ipaddr + ':' + port);
+            let socket = io.connect(ipaddr + ':' + port, {
+                query: `token=${jwt}`
+            });
+
+
             let user_id = "{{ auth()->user()->id }}";
             let lastDate ="{{$lastDate}}";
 
@@ -154,7 +162,6 @@
                 let url = "{{ route('message.conversation-messages') }}";
                 let form = $(this);
                 let formData = new FormData();
-                let token = "{{ csrf_token() }}";
                 let friendId = "{{ $friendInfo->id }}";
                 formData.append('userId', friendId);
                 formData.append('_token', token);
@@ -187,7 +194,6 @@
                 let url = "{{ route('message.send-message') }}";
                 let form = $(this);
                 let formData = new FormData();
-                let token = "{{ csrf_token() }}";
                 let friendId = "{{ $friendInfo->id }}";
 
                 formData.append('message', msg);

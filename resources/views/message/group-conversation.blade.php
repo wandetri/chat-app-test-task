@@ -18,7 +18,7 @@
                 @foreach($messages as $message)
                     <div class="row px-2 py-1 {{($message->user_message->sender_id!=$myInfo->id)?'flex-row':'flex-row-reverse'}}">
                         <div class="chat-bubble p-2">
-                            <strong>{{$message->user_message->user->name}}</strong><br>
+                            @if($message->user_message->sender_id!=$myInfo->id) <strong>{{$message->user_message->user->name}}</strong><br> @endif
                             {{$message->message}}
                         </div>
                     </div>
@@ -75,11 +75,19 @@
 @push('scripts')
     <script>
         $(function () {
+
+            let token = "{{ csrf_token() }}";
+            let jwt ="{{$token}}";
+
             let ipaddr = '127.0.0.1';
             let port = '4848';
-            let socket = io(ipaddr + ':' + port);
+            let socket = io.connect(ipaddr + ':' + port, {
+                query: `token=${jwt}`
+            });
+            
             let user_id = "{{ auth()->user()->id }}";
             let lastDate = "{{ $lastDate }}";
+
 
             let $textMessage = $('#text-message-input');
             let $chatContainer = $('.chat-container');
@@ -88,6 +96,7 @@
             let $onlineSwitch = $('#onlineSwitch');
             let $textMember = $('#text-member');
             let $contactLink = $('.contact-link');
+
 
             moveScrollTo();
 
@@ -105,7 +114,7 @@
             function chatBubbleGenerator(message,self=false){
                 return `<div class="row px-2 py-1 ${self?'flex-row-reverse':'flex-row'}">
                     <div class="chat-bubble p-2">
-                        <strong>${htmlEntities(message.user_message.user.name)}</strong><br>
+                        ${!self?'<strong>'+htmlEntities(message.user_message.user.name)+'</strong><br>':''}
                         ${htmlEntities(message.message)}
                     </div>
                 </div>`;
@@ -158,7 +167,6 @@
                 let url = "{{ route('message.conversation-messages') }}";
                 let form = $(this);
                 let formData = new FormData();
-                let token = "{{ csrf_token() }}";
 
                 formData.append('userId', 0);
                 formData.append('_token', token);
@@ -188,12 +196,10 @@
                 })
             }
 
-            /* send message and append chat bubble*/
             function sendMessage(msg) {
                 let url = "{{ route('message.send-message') }}";
                 let form = $(this);
                 let formData = new FormData();
-                let token = "{{ csrf_token() }}";
 
                 formData.append('message', msg);
                 formData.append('_token', token);
@@ -206,16 +212,11 @@
                     data: formData,
                     processData: false,
                     contentType: false,
-                    dataType: 'JSON',
-                    success: function (response) {
-                        // if (response.success) {
-                        //     $chatContainer.append(chatBubbleGenerator(response.data,true));
-                        //     moveScrollTo();
-                        // }
-                    }
+                    dataType: 'JSON'
                 })
             }
 
+            
             /* socket processes */
             /*------------------*/
             socket.on('connect', function () {
@@ -241,6 +242,13 @@
             socket.on("groupMessage", function (message) {
                 $chatContainer.append(chatBubbleGenerator(message, message.sender_id == user_id));
                 moveScrollTo();
+            });
+
+            socket.on('unauthorized', (error) => {
+                if (error.data.type == 'UnauthorizedError' || error.data.code == 'invalid_token') {
+                    // redirect user to login page perhaps?
+                    console.log('User token has expired');
+                }
             });
             /*------------------*/
 
