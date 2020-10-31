@@ -14,7 +14,7 @@ class MessageController extends Controller
 {
     public function groupConversation(){
         $id=Auth::id();
-        $users = User::where('id','!=',$id)->get();
+        $users = User::where('id','!=',$id)->get()->sortBy('name');
         $myInfo = User::find($id);
         $this->data['users'] = $users;
         $this->data['myInfo'] = $myInfo;
