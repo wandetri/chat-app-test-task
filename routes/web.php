@@ -19,18 +19,20 @@ Route::get('/', function () {
 });
 
 Auth::routes();
+Route::group(['middleware' => ['auth']], function() {
+    Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+    Route::get('group-conversation', [App\Http\Controllers\MessageController::class, 'groupConversation'])
+    ->name('message.group-conversation');
 
-Route::get('group-conversation', [App\Http\Controllers\MessageController::class, 'groupConversation'])
-->name('message.group-conversation');
+    Route::get('conversation/{userId}', [App\Http\Controllers\MessageController::class, 'conversation'])
+    ->name('message.conversation');
 
-Route::get('conversation/{userId}', [App\Http\Controllers\MessageController::class, 'conversation'])
-->name('message.conversation');
-
-Route::post('conversation-messages/', [App\Http\Controllers\MessageController::class, 'getMessagesConversation'])
-->name('message.conversation-messages');
+    Route::post('conversation-messages/', [App\Http\Controllers\MessageController::class, 'getMessagesConversation'])
+    ->name('message.conversation-messages');
 
 
-Route::post('send-message', [App\Http\Controllers\MessageController::class, 'sendMessage'])
-->name('message.send-message');
+    Route::post('send-message', [App\Http\Controllers\MessageController::class, 'sendMessage'])
+    ->name('message.send-message');
+
+});

@@ -231,7 +231,6 @@ label:focus,
    */
 
 .chat-container {
-    font-size: 14px;
     color: #333;
     background-color: #dce7ff;
     height: calc(87vh - 72px);
@@ -306,7 +305,6 @@ label:focus,
     padding-top: .5rem;
     overflow-x: hidden;
     overflow-y: auto;
-    font-size: 14px;
     color: #333;
 }
 
