@@ -16,12 +16,10 @@
         <div class="chat-container col-md-9 col-lg-10 p-3">
             @if($messages->count())
                 @foreach($messages as $message)
-                    <div
-                        class="row {{ ($message->user_message->sender_id!=$myInfo->id)?'chat-row':'chat-row-self' }}">
-                        <div
-                            class="chat-bubble p-3 col-md-5 {{ ($message->user_message->sender_id==$myInfo->id)?'offset-md-7':'' }}">
-                            <strong>{{$message->user_message->user->name}}</strong>
-                            <p>{{ $message->message }}</p>
+                    <div class="row px-2 py-1 {{($message->user_message->sender_id!=$myInfo->id)?'flex-row':'flex-row-reverse'}}">
+                        <div class="chat-bubble p-2">
+                            <strong>{{$message->user_message->user->name}}</strong><br>
+                            {{$message->message}}
                         </div>
                     </div>
                 @endforeach
@@ -104,11 +102,11 @@
             }
 
             /* generate chat bubble component */
-            function chatBubbleGenerator(message, self = false) {
-                return `
-                <div class="row chat-row${self?'-self':''}">
-                    <div class="chat-bubble ${self?'offset-md-7':''} p-3 col-md-5">
-                        <p>${htmlEntities(message.message)}</p>
+            function chatBubbleGenerator(message,self=false){
+                return `<div class="row px-2 py-1 ${self?'flex-row-reverse':'flex-row'}">
+                    <div class="chat-bubble p-2">
+                        <strong>${htmlEntities(message.user_message.user.name)}</strong><br>
+                        ${htmlEntities(message.message)}
                     </div>
                 </div>`;
             }
@@ -243,14 +241,7 @@
             socket.on("groupMessage", function (message) {
                 $chatContainer.append(chatBubbleGenerator(message, message.sender_id == user_id));
                 moveScrollTo();
-                // alert('haha');
             });
-
-            // socket.on("group-channel:App\\Events\\GroupMessageEvent", function (message) {
-            //     $chatContainer.append(chatBubbleGenerator(message));
-            //     moveScrollTo();
-            // });
-
             /*------------------*/
 
         });

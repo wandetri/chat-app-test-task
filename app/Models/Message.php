@@ -11,4 +11,8 @@ class Message extends Model
         return $this->hasOne(UserMessage::class);
     }
 
+    public function users(){
+        return $this->belongsToMany(User::class, 'user_messages','message_id','sender_id')
+        ->withTimestamps();
+    }
 }

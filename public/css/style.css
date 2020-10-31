@@ -241,24 +241,18 @@ label:focus,
     overflow-y: auto;
 }
 
-.chat-row {
-    padding-left: 1rem;
-    padding-bottom: 0.5rem;
-}
 
-.chat-row-self {
-    padding-right: 1rem;
-    padding-bottom: 0.5rem;
-}
 
-.chat-row .chat-bubble {
+.flex-row .chat-bubble {
+    max-width: 40vw;
     background-color: white;
     border-radius: 5px;
     -webkit-box-shadow: 0px 0px 13px -8px rgba(0, 0, 0, 0.5);
     box-shadow: 0px 0px 13px -8px rgba(0, 0, 0, 0.5);
 }
 
-.chat-row-self .chat-bubble {
+.flex-row-reverse .chat-bubble {
+    max-width: 40vw;
     background-color: #99b9ff;
     border-radius: 5px;
     -webkit-box-shadow: 0px 0px 13px -8px rgba(0, 0, 0, 0.5);

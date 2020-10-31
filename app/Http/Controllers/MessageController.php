@@ -88,7 +88,7 @@ class MessageController extends Controller
                 });
             })->where('created_at','<',$lastDate)->get()->sortBy('created_at');
         }else{
-            $data =  Message::latest()->take(10)->with('user_message')->whereHas('user_message', function($q) {
+            $data =  Message::latest()->take(10)->with('user_message.user')->whereHas('user_message', function($q) {
                 $q->where(function($query) {
                     $query->where('receiver_id',0)
                     ->where('chat_type',1);
@@ -129,7 +129,7 @@ class MessageController extends Controller
   
                 $data =[];
                 $data['sender_id'] = $sender_id;
-                $data['sender_name'] = $sender->name;
+                $data['user_message']['user']['name'] = $sender->name;
                 $data['receiver_id'] = $receiver_id;
                 $data['message'] = $message->message;
                 $data['created_at'] = $message->created_at;
@@ -147,7 +147,7 @@ class MessageController extends Controller
                 ]);
             }catch(\Exception $e){
                 $message->delete();
-                // dd($e);
+                dd($e);
             }
         }
     }
