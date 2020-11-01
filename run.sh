@@ -8,7 +8,7 @@ pm2 delete server.yaml
 composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
 
 #Generate JWT Secret
-php artisan jwt:secret 
+php artisan jwt:secret --force
 
 #Generate Key
 php artisan key:generate 
